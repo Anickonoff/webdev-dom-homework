@@ -97,11 +97,12 @@
       const newli = document.createElement('li');
       newli.classList.add('comment');
       newli.innerHTML = `<div class="comment-header">
-            <div></div>
-            <div></div>
+            <div>${userName.value}</div>
+            <div>${textDate}</div>
           </div>
           <div class="comment-body">
             <div class="comment-text">
+              ${userText.value}
             </div>
           </div>
           <div class="comment-footer">
@@ -110,11 +111,11 @@
               <button class="like-button -active-like"></button>
             </div>
           </div>`
-      newli.querySelectorAll('.comment-header div')[0].textContent = userName.value;
-      newli.querySelectorAll('.comment-header div')[1].textContent = textDate;
-      let commentText = document.createElement('pre');
-      commentText.textContent =userText.value; 
-      newli.querySelector('.comment-text').appendChild(commentText);
+      // newli.querySelectorAll('.comment-header div')[0].textContent = userName.value;
+      // newli.querySelectorAll('.comment-header div')[1].textContent = textDate;
+      // let commentText = document.createElement('pre');
+      // commentText.textContent =userText.value; 
+      // newli.querySelector('.comment-text').appendChild(commentText);
       comments.appendChild(newli);
     })
 
