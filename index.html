@@ -9,40 +9,6 @@
   <body>
     <div class="container">
       <ul class="comments">
-        <!-- <li class="comment">
-          <div class="comment-header">
-            <div>Глеб Фокин</div>
-            <div>12.02.22 12:18</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              Это будет первый комментарий на этой странице
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">3</span>
-              <button class="like-button"></button>
-            </div>
-          </div>
-        </li>
-        <li class="comment">
-          <div class="comment-header">
-            <div>Варвара Н.</div>
-            <div>13.02.22 19:22</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              Мне нравится как оформлена эта страница! ❤
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">75</span>
-              <button class="like-button -active-like"></button>
-            </div>
-          </div>
-        </li> -->
       </ul>
       <div class="add-form">
         <input
@@ -87,16 +53,42 @@
       },
     ];
 
+    const convertText = (string) => {
+      return string.replaceAll('<', '&lt').replaceAll('>','&gt');
+    }
+
+    const addBtnEvent = () => {
+      for(const likeBtn of document.querySelectorAll('.like-button')) {
+        likeBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const likesCounter = commentList[likeBtn.dataset.id].likesCounter;
+          const isLiked = commentList[likeBtn.dataset.id].liked;
+          commentList[likeBtn.dataset.id].likesCounter = isLiked ? likesCounter - 1 : likesCounter + 1;
+          commentList[likeBtn.dataset.id].liked = !isLiked;
+          renderComments();
+        })
+      }
+    }
+
+    const addCommentEvent = () => {
+      for(const comment of document.querySelectorAll('.comment')) {
+        comment.addEventListener('click', () => {
+          const textField = document.querySelector('.add-form-text');
+          textField.value = '>>>' + commentList[comment.dataset.id].name + ' написал(а): ' + commentList[comment.dataset.id].text + '<<<\n';
+        })
+      }
+    }
+
     const renderComments = () => {
       comments.innerHTML = commentList.map((comment, index) => `
-        <li class="comment">
+        <li class="comment" data-id="${index}">
           <div class="comment-header">
-            <div>${comment.name}</div>
+            <div>${convertText(comment.name)}</div>
             <div>${comment.date}</div>
           </div>
           <div class="comment-body">
             <div class="comment-text">
-              ${comment.text}
+              ${convertText(comment.text)}
             </div>
           </div>
           <div class="comment-footer">
@@ -107,18 +99,8 @@
           </div>
         </li>
       `).join('');
-      for(const likeBtn of document.querySelectorAll('.like-button')) {
-        likeBtn.addEventListener('click', () => {
-          if (commentList[likeBtn.dataset.id].liked) {
-            commentList[likeBtn.dataset.id].likesCounter--; 
-            commentList[likeBtn.dataset.id].liked = false;
-          } else {
-            commentList[likeBtn.dataset.id].likesCounter++; 
-            commentList[likeBtn.dataset.id].liked = true;
-          }
-          renderComments();
-        })
-      }
+      addBtnEvent();
+      addCommentEvent();
     }
 
     renderComments();
