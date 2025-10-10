@@ -9,7 +9,7 @@
   <body>
     <div class="container">
       <ul class="comments">
-        <li class="comment">
+        <!-- <li class="comment">
           <div class="comment-header">
             <div>Глеб Фокин</div>
             <div>12.02.22 12:18</div>
@@ -42,7 +42,7 @@
               <button class="like-button -active-like"></button>
             </div>
           </div>
-        </li>
+        </li> -->
       </ul>
       <div class="add-form">
         <input
@@ -70,6 +70,59 @@
     const userName = document.querySelector('.add-form-name');
     const comments = document.querySelector('.comments');
 
+    const commentList = [
+      {
+        name: "Глеб Фокин",
+        date: "12.02.22 12:18",
+        text: "Это будет первый комментарий на этой странице",
+        likesCounter: 3,
+        liked: false,
+      },
+      {
+        name: "Варвара Н.",
+        date: "13.02.22 19:22",
+        text: "Мне нравится как оформлена эта страница! ❤",
+        likesCounter: 75,
+        liked: true,
+      },
+    ];
+
+    const renderComments = () => {
+      comments.innerHTML = commentList.map((comment, index) => `
+        <li class="comment">
+          <div class="comment-header">
+            <div>${comment.name}</div>
+            <div>${comment.date}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">
+              ${comment.text}
+            </div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">${comment.likesCounter}</span>
+              <button class="like-button ${comment.liked ? '-active-like' : ''}" data-id="${index}"></button>
+            </div>
+          </div>
+        </li>
+      `).join('');
+      for(const likeBtn of document.querySelectorAll('.like-button')) {
+        likeBtn.addEventListener('click', () => {
+          if (commentList[likeBtn.dataset.id].liked) {
+            commentList[likeBtn.dataset.id].likesCounter--; 
+            commentList[likeBtn.dataset.id].liked = false;
+          } else {
+            commentList[likeBtn.dataset.id].likesCounter++; 
+            commentList[likeBtn.dataset.id].liked = true;
+          }
+          renderComments();
+        })
+      }
+    }
+
+    renderComments();
+
     userText.addEventListener('blur', () => {
       if (!userText.value) {
         userText.style.backgroundColor = 'red'
@@ -94,29 +147,8 @@
       }
       const currentDate = new Date();
       const textDate = currentDate.getDate().toString().padStart(2, '0') + '.' + (currentDate.getMonth() + 1).toString().padStart(2, '0') + '.' + (currentDate.getFullYear()%100).toString().padStart(2, '0') + ' ' + currentDate.getHours() + ':' + currentDate.getMinutes().toString().padStart(2, '0');
-      const newli = document.createElement('li');
-      newli.classList.add('comment');
-      newli.innerHTML = `<div class="comment-header">
-            <div>${userName.value}</div>
-            <div>${textDate}</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              ${userText.value}
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">0</span>
-              <button class="like-button -active-like"></button>
-            </div>
-          </div>`
-      // newli.querySelectorAll('.comment-header div')[0].textContent = userName.value;
-      // newli.querySelectorAll('.comment-header div')[1].textContent = textDate;
-      // let commentText = document.createElement('pre');
-      // commentText.textContent =userText.value; 
-      // newli.querySelector('.comment-text').appendChild(commentText);
-      comments.appendChild(newli);
+      commentList.push({name: userName.value, date: textDate, text: userText.value, likesCounter: 0, liked: false});
+      renderComments();
     })
 
 
