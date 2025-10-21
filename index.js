@@ -1,6 +1,7 @@
 import { renderComments } from './modules/render.js'
 import { initFormListener } from './modules/initListeners.js'
-import { importComments } from './modules/commentsData.js'
+import { updateComments } from './modules/commentsData.js'
+import { importComments } from './modules/api.js'
 
 // fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
 //     method: 'GET',
@@ -13,11 +14,16 @@ import { importComments } from './modules/commentsData.js'
 //         renderComments()
 //     })
 
-async function importRenderComments() {
-    await importComments()
-    renderComments()
-}
-importRenderComments()
+// async function importRenderComments() {
+//     let newComments = await importComments()
+//     updateComments(newComments)
+//     renderComments()
+// }
+// importRenderComments()
 
+importComments().then((result) => {
+    updateComments(result.comments)
+    renderComments()
+})
 initFormListener()
 console.log('It works!')

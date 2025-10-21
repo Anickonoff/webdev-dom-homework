@@ -1,4 +1,5 @@
-import { commentList, importComments } from './commentsData.js'
+import { exportComments, importComments } from './api.js'
+import { commentList, updateComments } from './commentsData.js'
 import { renderComments } from './render.js'
 
 export const addBtnEvent = () => {
@@ -60,36 +61,14 @@ export const initFormListener = () => {
             userText.style.backgroundColor = 'red'
             return
         }
-        // const currentDate = new Date()
-        // const textDate =
-        //     currentDate.getDate().toString().padStart(2, '0') +
-        //     '.' +
-        //     (currentDate.getMonth() + 1).toString().padStart(2, '0') +
-        //     '.' +
-        //     (currentDate.getFullYear() % 100).toString().padStart(2, '0') +
-        //     ' ' +
-        //     currentDate.getHours() +
-        //     ':' +
-        //     currentDate.getMinutes().toString().padStart(2, '0')
-        fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
-            method: 'POST',
-            body: JSON.stringify({
-                text: userText.value,
-                name: userName.value,
-            }),
-        })
-            .then((response) => {
-                return response.json()
-            })
-            .then(async (data) => {
-                if (data.result == 'ok') {
-                    await importComments()
-                    renderComments()
-                }
+        exportComments({ text: userText.value, name: userName.value })
+            .then(() => importComments())
+            .then((result) => {
+                updateComments(result.comments)
+                renderComments()
             })
 
         userName.value = ''
         userText.value = ''
-        renderComments()
     })
 }
