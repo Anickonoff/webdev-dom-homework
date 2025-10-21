@@ -1,16 +1,31 @@
-export const commentList = [
-    {
-        name: 'Глеб Фокин',
-        date: '12.02.22 12:18',
-        text: 'Это будет первый комментарий на этой странице',
-        likesCounter: 3,
-        liked: false,
-    },
-    {
-        name: 'Варвара Н.',
-        date: '13.02.22 19:22',
-        text: 'Мне нравится как оформлена эта страница! ❤',
-        likesCounter: 75,
-        liked: true,
-    },
-]
+export let commentList = []
+
+export const updateComments = (newComments) => {
+    commentList = newComments
+}
+
+export async function importComments() {
+    return fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
+        method: 'GET',
+    })
+        .then((response) => {
+            return response.json()
+        })
+        .then((data) => {
+            updateComments(data.comments)
+            return commentList
+        })
+}
+
+// export const importComments = new Promise(() => {
+//     fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
+//         method: 'GET',
+//     })
+//         .then((response) => {
+//             return response.json()
+//         })
+//         .then((data) => {
+//             updateComments(data.comments)
+//             console.log(commentList)
+//         })
+// })

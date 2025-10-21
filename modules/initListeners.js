@@ -1,79 +1,93 @@
-import { commentList } from './commentsData.js'
+import { commentList, importComments } from './commentsData.js'
 import { renderComments } from './render.js'
 
 export const addBtnEvent = () => {
     for (const likeBtn of document.querySelectorAll('.like-button')) {
         likeBtn.addEventListener('click', (event) => {
             event.stopPropagation()
-            const likesCounter = commentList[likeBtn.dataset.id].likesCounter
-            const isLiked = commentList[likeBtn.dataset.id].liked
-            commentList[likeBtn.dataset.id].likesCounter = isLiked
-                ? likesCounter - 1
-                : likesCounter + 1
-            commentList[likeBtn.dataset.id].liked = !isLiked
+            const idLiked = commentList.findIndex(
+                (comment) => comment.id === Number(likeBtn.dataset.id),
+            )
+            const likes = commentList[idLiked].likes
+            const isLiked = commentList[idLiked].isLiked
+            commentList[idLiked].likes = isLiked ? likes - 1 : likes + 1
+            commentList[idLiked].isLiked = !isLiked
             renderComments()
         })
     }
 }
 
 export const addCommentEvent = () => {
-    for (const comment of document.querySelectorAll('.comment')) {
-        comment.addEventListener('click', () => {
+    for (const commentBlock of document.querySelectorAll('.comment')) {
+        commentBlock.addEventListener('click', () => {
             const textField = document.querySelector('.add-form-text')
+            const idComment = commentList.findIndex(
+                (comment) => comment.id === Number(commentBlock.dataset.id),
+            )
             textField.value =
                 '>>>' +
-                commentList[comment.dataset.id].name +
+                commentList[idComment].author.name +
                 ' написал(а): ' +
-                commentList[comment.dataset.id].text +
+                commentList[idComment].text +
                 '<<<\n'
         })
     }
 }
 
-export const inifFormListener = () => {
+export const initFormListener = () => {
     const addButton = document.querySelector('.add-form-button')
     const userText = document.querySelector('.add-form-text')
     const userName = document.querySelector('.add-form-name')
     userText.addEventListener('blur', () => {
-        if (!userText.value) {
+        if (!userText.value.trim()) {
             userText.style.backgroundColor = 'red'
         } else {
             userText.style.backgroundColor = ''
         }
     })
     userName.addEventListener('blur', () => {
-        if (!userName.value) {
+        if (!userName.value.trim()) {
             userName.style.backgroundColor = 'red'
         } else {
             userName.style.backgroundColor = ''
         }
     })
     addButton.addEventListener('click', () => {
-        if (!userName.value) {
+        if (!userName.value.trim()) {
             userName.style.backgroundColor = 'red'
             return
-        } else if (!userText.value) {
+        } else if (!userText.value.trim()) {
             userText.style.backgroundColor = 'red'
             return
         }
-        const currentDate = new Date()
-        const textDate =
-            currentDate.getDate().toString().padStart(2, '0') +
-            '.' +
-            (currentDate.getMonth() + 1).toString().padStart(2, '0') +
-            '.' +
-            (currentDate.getFullYear() % 100).toString().padStart(2, '0') +
-            ' ' +
-            currentDate.getHours() +
-            ':' +
-            currentDate.getMinutes().toString().padStart(2, '0')
-        commentList.push({
-            name: userName.value,
-            date: textDate,
-            text: userText.value,
-            likesCounter: 0,
-            liked: false,
+        // const currentDate = new Date()
+        // const textDate =
+        //     currentDate.getDate().toString().padStart(2, '0') +
+        //     '.' +
+        //     (currentDate.getMonth() + 1).toString().padStart(2, '0') +
+        //     '.' +
+        //     (currentDate.getFullYear() % 100).toString().padStart(2, '0') +
+        //     ' ' +
+        //     currentDate.getHours() +
+        //     ':' +
+        //     currentDate.getMinutes().toString().padStart(2, '0')
+        fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
+            method: 'POST',
+            body: JSON.stringify({
+                text: userText.value,
+                name: userName.value,
+            }),
         })
+            .then((response) => {
+                return response.json()
+            })
+            .then(async (data) => {
+                if (data.result == 'ok') {
+                    await importComments()
+                    renderComments()
+                }
+            })
+
         userName.value = ''
         userText.value = ''
         renderComments()
