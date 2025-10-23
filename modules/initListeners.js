@@ -3,17 +3,28 @@ import { commentList, updateComments } from './commentsData.js'
 import { renderComments } from './render.js'
 
 export const addBtnEvent = () => {
+    function delay(interval = 300) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve()
+            }, interval)
+        })
+    }
     for (const likeBtn of document.querySelectorAll('.like-button')) {
         likeBtn.addEventListener('click', (event) => {
             event.stopPropagation()
+            likeBtn.classList.add('-loading-like')
             const idLiked = commentList.findIndex(
                 (comment) => comment.id === Number(likeBtn.dataset.id),
             )
-            const likes = commentList[idLiked].likes
-            const isLiked = commentList[idLiked].isLiked
-            commentList[idLiked].likes = isLiked ? likes - 1 : likes + 1
-            commentList[idLiked].isLiked = !isLiked
-            renderComments()
+            delay(2000).then(() => {
+                const likes = commentList[idLiked].likes
+                const isLiked = commentList[idLiked].isLiked
+                commentList[idLiked].likes = isLiked ? likes - 1 : likes + 1
+                commentList[idLiked].isLiked = !isLiked
+                likeBtn.classList.remove('-loading-like')
+                renderComments()
+            })
         })
     }
 }
@@ -61,14 +72,18 @@ export const initFormListener = () => {
             userText.style.backgroundColor = 'red'
             return
         }
+        document.querySelector('.container-formmessage').style.display = 'block'
+        document.querySelector('.add-form').style.display = 'none'
         exportComments({ text: userText.value, name: userName.value })
             .then(() => importComments())
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
+                document.querySelector('.container-formmessage').style.display =
+                    'none'
+                document.querySelector('.add-form').style.display = ''
+                userName.value = ''
+                userText.value = ''
             })
-
-        userName.value = ''
-        userText.value = ''
     })
 }
