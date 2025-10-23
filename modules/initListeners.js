@@ -14,15 +14,18 @@ export const addBtnEvent = () => {
         likeBtn.addEventListener('click', (event) => {
             event.stopPropagation()
             likeBtn.classList.add('-loading-like')
+            likeBtn.disabled = true
             const idLiked = commentList.findIndex(
                 (comment) => comment.id === Number(likeBtn.dataset.id),
             )
+
             delay(2000).then(() => {
                 const likes = commentList[idLiked].likes
                 const isLiked = commentList[idLiked].isLiked
                 commentList[idLiked].likes = isLiked ? likes - 1 : likes + 1
                 commentList[idLiked].isLiked = !isLiked
                 likeBtn.classList.remove('-loading-like')
+                likeBtn.disabled = false
                 renderComments()
             })
         })
