@@ -7,7 +7,7 @@ export async function importComments() {
 }
 
 export async function exportComments(data) {
-    fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
+    return fetch('https://wedev-api.sky.pro/api/v1/anton-nikonov/comments', {
         method: 'POST',
         body: JSON.stringify(data),
     })
