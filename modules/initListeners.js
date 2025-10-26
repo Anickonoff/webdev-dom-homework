@@ -77,16 +77,25 @@ export const initFormListener = () => {
         }
         document.querySelector('.container-formmessage').style.display = 'block'
         document.querySelector('.add-form').style.display = 'none'
-        exportComments({ text: userText.value, name: userName.value })
+        exportComments({
+            text: userText.value,
+            name: userName.value,
+            forceError: true,
+        })
             .then(() => importComments())
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
+                userName.value = ''
+                userText.value = ''
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+            .finally(() => {
                 document.querySelector('.container-formmessage').style.display =
                     'none'
                 document.querySelector('.add-form').style.display = ''
-                userName.value = ''
-                userText.value = ''
             })
     })
 }
