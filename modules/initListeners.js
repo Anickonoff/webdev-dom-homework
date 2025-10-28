@@ -1,6 +1,17 @@
-import { exportComments, importComments } from './api.js'
+import {
+    exportComments,
+    importComments,
+    sendAuth,
+    sendReg,
+    updateToken,
+} from './api.js'
 import { commentList, updateComments } from './commentsData.js'
-import { renderComments } from './render.js'
+import {
+    renderCommentForm,
+    renderComments,
+    renderLoginForm,
+    renderRistrationForm,
+} from './render.js'
 
 export const addBtnEvent = () => {
     function delay(interval = 300) {
@@ -16,7 +27,7 @@ export const addBtnEvent = () => {
             likeBtn.classList.add('-loading-like')
             likeBtn.disabled = true
             const idLiked = commentList.findIndex(
-                (comment) => comment.id === Number(likeBtn.dataset.id),
+                (comment) => comment.id === likeBtn.dataset.id,
             )
 
             delay(2000).then(() => {
@@ -37,7 +48,7 @@ export const addCommentEvent = () => {
         commentBlock.addEventListener('click', () => {
             const textField = document.querySelector('.add-form-text')
             const idComment = commentList.findIndex(
-                (comment) => comment.id === Number(commentBlock.dataset.id),
+                (comment) => comment.id === commentBlock.dataset.id,
             )
             textField.value =
                 '>>>' +
@@ -86,7 +97,6 @@ export const initFormListener = () => {
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
-                userName.value = ''
                 userText.value = ''
             })
             .catch((error) => {
@@ -96,6 +106,73 @@ export const initFormListener = () => {
                 document.querySelector('.container-formmessage').style.display =
                     'none'
                 document.querySelector('.add-form').style.display = ''
+            })
+    })
+}
+
+export const initInvitationListener = () => {
+    const regBtn = document.getElementById('regBtn')
+    const loginBtn = document.getElementById('loginBtn')
+
+    regBtn.addEventListener('click', () => {
+        renderRistrationForm()
+        initFormCheckListener()
+        initAuthListener('reg')
+    })
+
+    loginBtn.addEventListener('click', () => {
+        renderLoginForm()
+        initFormCheckListener()
+        initAuthListener('login')
+    })
+}
+
+export const initFormCheckListener = () => {
+    const fields = document.querySelectorAll('.add-form-name')
+    fields.forEach((field) => {
+        field.addEventListener('blur', () => {
+            if (!field.value.trim()) {
+                field.style.backgroundColor = 'red'
+            } else {
+                field.style.backgroundColor = ''
+            }
+        })
+    })
+}
+
+export const initAuthListener = (formType = 'login') => {
+    const sendBtn = document.querySelector('.add-form-button')
+    sendBtn.addEventListener('click', () => {
+        const login = document.getElementById('login')
+        const name = formType === 'reg' ? document.getElementById('name') : null
+        const password = document.getElementById('password')
+        if (formType === 'reg' && !name.value.trim()) {
+            name.style.backgroundColor = 'red'
+            return
+        } else if (!login.value.trim()) {
+            login.style.backgroundColor = 'red'
+            return
+        } else if (!password.value.trim()) {
+            password.style.backgroundColor = 'red'
+            return
+        }
+        const requestData =
+            formType === 'reg'
+                ? {
+                      login: login.value,
+                      name: name.value,
+                      password: password.value,
+                  }
+                : { login: login.value, password: password.value }
+        const apiCall = formType === 'reg' ? sendReg : sendAuth
+        apiCall(requestData)
+            .then((response) => {
+                updateToken(response.user.token)
+                renderCommentForm(response.user.name)
+                initFormListener()
+            })
+            .catch((error) => {
+                alert(error.message)
             })
     })
 }

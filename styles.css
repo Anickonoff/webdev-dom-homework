@@ -130,6 +130,10 @@ body {
     padding: 11px 22px;
 }
 
+.add-form-name:not(:first-child) {
+  margin-top: 12px;
+}
+
 .add-form-text {
     margin-top: 12px;
     padding: 22px;
@@ -138,7 +142,8 @@ body {
 
 .add-form-row {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: row-reverse;
+    justify-content: space-between;
 }
 
 .add-form-button {

@@ -1,5 +1,5 @@
 import { renderComments } from './modules/render.js'
-import { initFormListener } from './modules/initListeners.js'
+import { initInvitationListener } from './modules/initListeners.js'
 import { updateComments } from './modules/commentsData.js'
 import { importComments } from './modules/api.js'
 
@@ -15,5 +15,5 @@ importComments()
         document.querySelector('.container-commentmessage').textContent =
             error.message
     })
-initFormListener()
+initInvitationListener()
 console.log('It works!')
