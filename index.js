@@ -1,5 +1,8 @@
-import { renderComments } from './modules/render.js'
-import { initInvitationListener } from './modules/initListeners.js'
+import {
+    renderCommentForm,
+    renderComments,
+    renderInviteForm,
+} from './modules/render.js'
 import { updateComments } from './modules/commentsData.js'
 import { importComments } from './modules/api.js'
 
@@ -15,5 +18,12 @@ importComments()
         document.querySelector('.container-commentmessage').textContent =
             error.message
     })
-initInvitationListener()
+if (
+    localStorage.getItem('token') == null ||
+    localStorage.getItem('name') == null
+) {
+    renderInviteForm()
+} else {
+    renderCommentForm(localStorage.getItem('name'))
+}
 console.log('It works!')

@@ -1,6 +1,8 @@
 import {
+    delComment,
     exportComments,
     importComments,
+    likeComment,
     sendAuth,
     sendReg,
     updateToken,
@@ -9,18 +11,12 @@ import { commentList, updateComments } from './commentsData.js'
 import {
     renderCommentForm,
     renderComments,
+    renderInviteForm,
     renderLoginForm,
     renderRistrationForm,
 } from './render.js'
 
 export const addBtnEvent = () => {
-    function delay(interval = 300) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve()
-            }, interval)
-        })
-    }
     for (const likeBtn of document.querySelectorAll('.like-button')) {
         likeBtn.addEventListener('click', (event) => {
             event.stopPropagation()
@@ -29,16 +25,44 @@ export const addBtnEvent = () => {
             const idLiked = commentList.findIndex(
                 (comment) => comment.id === likeBtn.dataset.id,
             )
+            likeComment(likeBtn.dataset.id)
+                .then((response) => {
+                    commentList[idLiked].likes = response.result.likes
+                    commentList[idLiked].isLiked = response.result.isLiked
+                    renderComments()
+                    addCommentEvent()
+                })
+                .catch((error) => {
+                    alert(error.message)
+                })
+                .finally(() => {
+                    likeBtn.disabled = false
+                    likeBtn.classList.remove('-loading-like')
+                })
+        })
+    }
+}
 
-            delay(2000).then(() => {
-                const likes = commentList[idLiked].likes
-                const isLiked = commentList[idLiked].isLiked
-                commentList[idLiked].likes = isLiked ? likes - 1 : likes + 1
-                commentList[idLiked].isLiked = !isLiked
-                likeBtn.classList.remove('-loading-like')
-                likeBtn.disabled = false
-                renderComments()
-            })
+export const initDelBtnListener = () => {
+    for (const delBtn of document.querySelectorAll('.del-button')) {
+        delBtn.addEventListener('click', (event) => {
+            event.stopPropagation()
+            delBtn.classList.add('-loading-like')
+            delBtn.disabled = true
+            delComment(delBtn.dataset.id)
+                .then(() => importComments())
+                .then((result) => {
+                    updateComments(result.comments)
+                    renderComments()
+                    addCommentEvent()
+                })
+                .catch((error) => {
+                    alert(error.message)
+                })
+                .finally(() => {
+                    delBtn.disabled = false
+                    delBtn.classList.remove('-loading-like')
+                })
         })
     }
 }
@@ -97,6 +121,7 @@ export const initFormListener = () => {
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
+                addCommentEvent()
                 userText.value = ''
             })
             .catch((error) => {
@@ -169,10 +194,32 @@ export const initAuthListener = (formType = 'login') => {
             .then((response) => {
                 updateToken(response.user.token)
                 renderCommentForm(response.user.name)
+                localStorage.setItem('token', response.user.token)
+                localStorage.setItem('name', response.user.name)
                 initFormListener()
+            })
+            .then(() => importComments())
+            .then((result) => {
+                updateComments(result.comments)
+                renderComments()
+                addCommentEvent()
             })
             .catch((error) => {
                 alert(error.message)
             })
+    })
+}
+
+export const initLogoutBtnListener = () => {
+    const logoutBtn = document.getElementById('logoutBtn')
+    logoutBtn.addEventListener('click', () => {
+        localStorage.clear()
+        updateToken('')
+        importComments().then((result) => {
+            updateComments(result.comments)
+            renderComments()
+            renderInviteForm()
+            initInvitationListener()
+        })
     })
 }
