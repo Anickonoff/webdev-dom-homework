@@ -140,12 +140,14 @@ export const initInvitationListener = () => {
     const loginBtn = document.getElementById('loginBtn')
 
     regBtn.addEventListener('click', () => {
+        document.querySelector('.comments').style.display = 'none'
         renderRistrationForm()
         initFormCheckListener()
         initAuthListener('reg')
     })
 
     loginBtn.addEventListener('click', () => {
+        document.querySelector('.comments').style.display = 'none'
         renderLoginForm()
         initFormCheckListener()
         initAuthListener('login')
@@ -202,6 +204,7 @@ export const initAuthListener = (formType = 'login') => {
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
+                document.querySelector('.comments').style.display = ''
                 addCommentEvent()
             })
             .catch((error) => {
