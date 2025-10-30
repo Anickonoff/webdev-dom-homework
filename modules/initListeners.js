@@ -1,33 +1,68 @@
-import { exportComments, importComments } from './api.js'
+import {
+    delComment,
+    exportComments,
+    importComments,
+    likeComment,
+    sendAuth,
+    sendReg,
+    updateToken,
+} from './api.js'
 import { commentList, updateComments } from './commentsData.js'
-import { renderComments } from './render.js'
+import {
+    renderCommentForm,
+    renderComments,
+    renderInviteForm,
+    renderLoginForm,
+    renderRistrationForm,
+} from './render.js'
 
 export const addBtnEvent = () => {
-    function delay(interval = 300) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve()
-            }, interval)
-        })
-    }
     for (const likeBtn of document.querySelectorAll('.like-button')) {
         likeBtn.addEventListener('click', (event) => {
             event.stopPropagation()
             likeBtn.classList.add('-loading-like')
             likeBtn.disabled = true
             const idLiked = commentList.findIndex(
-                (comment) => comment.id === Number(likeBtn.dataset.id),
+                (comment) => comment.id === likeBtn.dataset.id,
             )
+            likeComment(likeBtn.dataset.id)
+                .then((response) => {
+                    commentList[idLiked].likes = response.result.likes
+                    commentList[idLiked].isLiked = response.result.isLiked
+                    renderComments()
+                    addCommentEvent()
+                })
+                .catch((error) => {
+                    alert(error.message)
+                })
+                .finally(() => {
+                    likeBtn.disabled = false
+                    likeBtn.classList.remove('-loading-like')
+                })
+        })
+    }
+}
 
-            delay(2000).then(() => {
-                const likes = commentList[idLiked].likes
-                const isLiked = commentList[idLiked].isLiked
-                commentList[idLiked].likes = isLiked ? likes - 1 : likes + 1
-                commentList[idLiked].isLiked = !isLiked
-                likeBtn.classList.remove('-loading-like')
-                likeBtn.disabled = false
-                renderComments()
-            })
+export const initDelBtnListener = () => {
+    for (const delBtn of document.querySelectorAll('.del-button')) {
+        delBtn.addEventListener('click', (event) => {
+            event.stopPropagation()
+            delBtn.classList.add('-loading-like')
+            delBtn.disabled = true
+            delComment(delBtn.dataset.id)
+                .then(() => importComments())
+                .then((result) => {
+                    updateComments(result.comments)
+                    renderComments()
+                    addCommentEvent()
+                })
+                .catch((error) => {
+                    alert(error.message)
+                })
+                .finally(() => {
+                    delBtn.disabled = false
+                    delBtn.classList.remove('-loading-like')
+                })
         })
     }
 }
@@ -37,7 +72,7 @@ export const addCommentEvent = () => {
         commentBlock.addEventListener('click', () => {
             const textField = document.querySelector('.add-form-text')
             const idComment = commentList.findIndex(
-                (comment) => comment.id === Number(commentBlock.dataset.id),
+                (comment) => comment.id === commentBlock.dataset.id,
             )
             textField.value =
                 '>>>' +
@@ -86,7 +121,7 @@ export const initFormListener = () => {
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
-                userName.value = ''
+                addCommentEvent()
                 userText.value = ''
             })
             .catch((error) => {
@@ -97,5 +132,97 @@ export const initFormListener = () => {
                     'none'
                 document.querySelector('.add-form').style.display = ''
             })
+    })
+}
+
+export const initInvitationListener = () => {
+    const regBtn = document.getElementById('regBtn')
+    const loginBtn = document.getElementById('loginBtn')
+
+    regBtn.addEventListener('click', () => {
+        document.querySelector('.comments').style.display = 'none'
+        renderRistrationForm()
+        initFormCheckListener()
+        initAuthListener('reg')
+    })
+
+    loginBtn.addEventListener('click', () => {
+        document.querySelector('.comments').style.display = 'none'
+        renderLoginForm()
+        initFormCheckListener()
+        initAuthListener('login')
+    })
+}
+
+export const initFormCheckListener = () => {
+    const fields = document.querySelectorAll('.add-form-name')
+    fields.forEach((field) => {
+        field.addEventListener('blur', () => {
+            if (!field.value.trim()) {
+                field.style.backgroundColor = 'red'
+            } else {
+                field.style.backgroundColor = ''
+            }
+        })
+    })
+}
+
+export const initAuthListener = (formType = 'login') => {
+    const sendBtn = document.querySelector('.add-form-button')
+    sendBtn.addEventListener('click', () => {
+        const login = document.getElementById('login')
+        const name = formType === 'reg' ? document.getElementById('name') : null
+        const password = document.getElementById('password')
+        if (formType === 'reg' && !name.value.trim()) {
+            name.style.backgroundColor = 'red'
+            return
+        } else if (!login.value.trim()) {
+            login.style.backgroundColor = 'red'
+            return
+        } else if (!password.value.trim()) {
+            password.style.backgroundColor = 'red'
+            return
+        }
+        const requestData =
+            formType === 'reg'
+                ? {
+                      login: login.value,
+                      name: name.value,
+                      password: password.value,
+                  }
+                : { login: login.value, password: password.value }
+        const apiCall = formType === 'reg' ? sendReg : sendAuth
+        apiCall(requestData)
+            .then((response) => {
+                updateToken(response.user.token)
+                localStorage.setItem('token', response.user.token)
+                localStorage.setItem('name', response.user.name)
+            })
+            .then(() => importComments())
+            .then((result) => {
+                updateComments(result.comments)
+                renderComments()
+                document.querySelector('.comments').style.display = ''
+                renderCommentForm(localStorage.getItem('name'))
+                initFormListener()
+                addCommentEvent()
+            })
+            .catch((error) => {
+                alert(error.message)
+            })
+    })
+}
+
+export const initLogoutBtnListener = () => {
+    const logoutBtn = document.getElementById('logoutBtn')
+    logoutBtn.addEventListener('click', () => {
+        localStorage.clear()
+        updateToken('')
+        importComments().then((result) => {
+            updateComments(result.comments)
+            renderComments()
+            renderInviteForm()
+            initInvitationListener()
+        })
     })
 }
