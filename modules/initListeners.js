@@ -195,16 +195,16 @@ export const initAuthListener = (formType = 'login') => {
         apiCall(requestData)
             .then((response) => {
                 updateToken(response.user.token)
-                renderCommentForm(response.user.name)
                 localStorage.setItem('token', response.user.token)
                 localStorage.setItem('name', response.user.name)
-                initFormListener()
             })
             .then(() => importComments())
             .then((result) => {
                 updateComments(result.comments)
                 renderComments()
                 document.querySelector('.comments').style.display = ''
+                renderCommentForm(localStorage.getItem('name'))
+                initFormListener()
                 addCommentEvent()
             })
             .catch((error) => {
