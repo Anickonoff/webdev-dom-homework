@@ -5,7 +5,8 @@ import {
     initLogoutBtnListener,
 } from './initListeners.js'
 import { commentList } from './commentsData.js'
-import { tagFilter, dateConverter } from './textConverters.js'
+import { tagFilter } from './textConverters.js'
+import { format } from 'date-fns'
 
 export const renderComments = () => {
     const comments = document.querySelector('.comments')
@@ -15,7 +16,7 @@ export const renderComments = () => {
         <li class="comment" data-id="${comment.id}">
           <div class="comment-header">
             <div>${tagFilter(comment.author.name)}</div>
-            <div>${dateConverter(comment.date)}</div>
+            <div>${format(comment.date, 'dd.MM.yyyy kk:mm')}</div>
           </div>
           <div class="comment-body">
             <div class="comment-text">
